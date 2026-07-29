@@ -9,3 +9,4 @@ The use of AI for this code is limited to the powershell script and finding bugs
 The KnightIcon and whitePanel pngs are required for running. You may edit them, but do not delete or rename them.
 
 To import a tile or sprite, copy or import the file into the folder the code resides in, then simply type the filename with no path into the import popup when the import button is clicked.
+Try to keep to .png files for sprites and tilesets. If you must try, include the filetype in the import popup, or it will not recognize the file.
