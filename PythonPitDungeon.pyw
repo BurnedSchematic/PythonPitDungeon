@@ -228,6 +228,11 @@ def on_message(client, userdata, message):
                     scenes[sceneindex].elements.append(player(screen, message[1], owner=message[0]))
                 except FileNotFoundError:
                     client.publish(topic, f"Need_Player_File:{message[0]}")
+            elif message[1][5:] == "file=":
+                name = f'playerIcon{random.randint(0,99999999)}.png'
+                with open(name, "w") as file:
+                    file.write(message[1])
+                scenes[sceneindex].elements.append(player(screen, name, owner=message[0]))
             foundPlayer = False
             for element in scenes[sceneindex].elements:
                 if isinstance(element,player) and element.owner == message[0]:
@@ -253,7 +258,7 @@ def on_message(client, userdata, message):
         elif message == f"Need_Player_File:{public_ip}":
             for element in scenes[sceneindex].elements:
                 if isinstance(element,player):
-                    client.publish(topic, f'{public_ip}:{open(element.imagepath, "rb").read()}')
+                    client.publish(topic, f'{public_ip}:file={open(element.imagepath, "rb").read()}')
 client.on_message = on_message
 def askTileInput(title = "Enter file name"):
     global TileInput
