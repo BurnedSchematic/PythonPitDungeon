@@ -89,7 +89,7 @@ class sprite():
     def reloadImage(self):
         self.img = pygame.image.load(self.imagepath).convert_alpha()
 class player():
-    def __init__(self, screen, imagepath, width = 100, height = 100, position = (None, None), owner:str = "localhost"):
+    def __init__(self, screen, imagepath, width = 100, height = 100, position = (None, None), rotation = 0, owner:str = "localhost"):
         if position[0] is None or position[1] is None:
             position = (screen.get_width()/2, screen.get_height()/2)
         if owner == "localhost":
@@ -101,11 +101,13 @@ class player():
         self.width = width
         self.height = height
         self.position = position
+        self.rotation = rotation
         self.img = pygame.image.load(self.imagepath).convert_alpha()
         self.rect = pygame.Rect(position[0]-width/2, position[1]-height/2, width, height)
     def show(self):
         self.rect = pygame.Rect(self.position[0]-self.width/2, self.position[1]-self.height/2, self.width, self.height)
         image = pygame.transform.scale(self.img, (self.width, self.height))
+        image = pygame.transform.rotate(image, self.rotation)
         self.screen.blit(image, self.rect)
     def drag(self):
         global draggingSprite
@@ -409,8 +411,12 @@ while running:
             for element in scenes[sceneindex].elements:
                 if isinstance(element,player):
                     if element.rect.collidepoint(pygame.mouse.get_pos()):
-                        element.width += event.y
-                        element.height += event.y
+                        if pygame.key.get_pressed()[pygame.K_LSHIFT] or pygame.key.get_pressed()[pygame.K_RSHIFT]:
+                            element.rotation += event.y
+                        else:
+                            element.width += event.y
+                            element.height += event.y
+                            element.rotation += event.x
     #wipe everything
     screen.fill("black")
     scenes[sceneindex].show()
