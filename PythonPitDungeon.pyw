@@ -209,7 +209,7 @@ class scene():
 #button functions
 global TileInput, SpriteInput, server, public_ip
 public_ip = str(urllib.request.urlopen('https://ident.me').read().decode('utf8'))
-brokerAddress = "test.mosquitto.org"
+brokerAddress = "broker.hivemq.com"
 server = str(random.randint(0,99999999))
 topic = f'pythonpitdungeon/game/{server}'
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
@@ -220,8 +220,9 @@ def on_message(client, userdata, message):
     global scenes
     global sceneindex
     message = message.payload.decode("utf-8")
+    print(message)
     if sceneindex == 1:#DM screen
-        if message == 'Need_Player_Icon' or message == "Accepted":
+        if 'Need_Player_Icon' in message or message == "Accepted":
             pass
         else:
             message = message.split(":")
@@ -247,6 +248,8 @@ def on_message(client, userdata, message):
                         element.position = (element.position[0],element.position[1]+10)
                     if message[1] == "left":
                         element.position = (element.position[0]-10,element.position[1])
+                    if "rotation" in message[1]:
+                        element.rotation += int(message[1].split("+")[1])
                     client.publish(topic, "Accepted")
                     foundPlayer = True
                     break
@@ -323,7 +326,9 @@ def sendCommand(command:str):
     global sceneindex
     global public_ip
     global client
-    client.publish(topic, f'{public_ip}:{command}')
+    print(client.is_connected())
+    if client.is_connected():
+        client.publish(topic, f'{public_ip}:{command}')
 def connectToServer(texttochange:text = text(pygame.Surface((1,1)),"")):
     global server
     global client
@@ -334,10 +339,10 @@ def connectToServer(texttochange:text = text(pygame.Surface((1,1)),"")):
     client.connect(brokerAddress, 1883, 60)
     client.subscribe(topic)
     client.loop_start()
-    '''
-    networking_thread = threading.Thread(target=client.loop_forever)
-    networking_thread.start()
-    '''
+    for element in scenes[sceneindex].elements:
+        if element.isinstance(player):
+            client.publish(topic, f'{public_ip}:{element.imagepath}')
+            break
 def hostGame():
     global scenes
     global sceneindex
@@ -411,12 +416,15 @@ while running:
             for element in scenes[sceneindex].elements:
                 if isinstance(element,player):
                     if element.rect.collidepoint(pygame.mouse.get_pos()):
+                        ogrotation = element.rotation
                         if pygame.key.get_pressed()[pygame.K_LSHIFT] or pygame.key.get_pressed()[pygame.K_RSHIFT]:
                             element.rotation += event.y
                         else:
                             element.width += event.y
                             element.height += event.y
                             element.rotation += event.x
+                        if element.rotation != ogrotation and sceneindex == 2:
+                            sendCommand(f'rotation+{element.rotation-ogrotation}')
     #wipe everything
     screen.fill("black")
     scenes[sceneindex].show()

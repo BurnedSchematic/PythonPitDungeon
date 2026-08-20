@@ -27,7 +27,7 @@ Write-Host "Python found at $($python.Source)"
 
 # --- Install dependencies ---
 Write-Host "Installing required packages..."
-python -m pip install pygame websockets paho-mqtt
+python -m pip install pygame paho-mqtt
 
 # --- Run the game ---
 Write-Host "Installation complete."
